@@ -38,11 +38,12 @@ void process_instruction()
     {
     	if (op>3)//é I-type
     	{
-    		uint32_t imu = pc & 0xffff;
-    		int im = pc & 0xffff;
+    		uint16_t imu = pc & 0xffff;
+    		short im = pc & 0xffff;
 
     		if (op == 9)//ADDIU
     		{
+    			printf("q\n");
     			val_rtu = val_rsu + imu;
     			NEXT_STATE.REGS[rt] = val_rtu;
     		}
@@ -64,7 +65,7 @@ void process_instruction()
 
 			if (op == 0xd)//ORI
 			{
-				NEXT_STATE.REGS[rt] = val_rs | im;
+				NEXT_STATE.REGS[rt] = val_rs | imu;
 			}
 
 			if (op == 0xe)//XORI
@@ -79,8 +80,69 @@ void process_instruction()
 
 			if (op == 0xf)//LUI
 			{
-				NEXT_STATE.REGS[rt] = im << 16;
+				NEXT_STATE.REGS[rt] = imu << 16;
 			}
+
+			if (op == 0x20)//LB
+			{
+				val_rs += im;
+				val_rt = mem_read_32(val_rs);
+				printf("ants %x\n", val_rt);
+				val_rt = val_rt + 0xffffff00;
+				printf("dispois %x\n", val_rt);
+				NEXT_STATE.REGS[rt] = val_rt;
+			}
+
+			if (op == 0x21)//LH
+			{
+				val_rs += im;
+				val_rt = mem_read_32(val_rs);
+				val_rt = val_rt + 0xffff0000;
+				NEXT_STATE.REGS[rt] = val_rt;
+			}
+
+			if (op == 0x24)//LBU
+			{
+				val_rs += im;
+				val_rtu = mem_read_32(val_rs);
+				val_rtu = val_rtu & 0xff;
+				NEXT_STATE.REGS[rt] = val_rtu;
+			}
+
+			if (op == 0x25)//LHU
+			{
+				val_rs += im;
+				val_rtu = mem_read_32(val_rs);
+				val_rtu = val_rtu & 0xffff;
+				NEXT_STATE.REGS[rt] = val_rtu;
+			}
+
+			if (op == 0x23)//LW
+			{
+				val_rs += im;
+				NEXT_STATE.REGS[rt] = mem_read_32(val_rs);
+			}
+
+			if (op == 0x28)//SB
+			{
+				val_rs += im;
+				val_rt = val_rt & 0xff;
+				mem_write_32(val_rs,val_rt);
+			}
+
+			if (op == 0x29)//SH
+			{
+				val_rs += im;
+				val_rt = val_rt & 0xffff;
+				mem_write_32(val_rs,val_rt);
+			}
+
+			if (op == 0x2b)//SW
+			{
+				val_rs += im;
+				mem_write_32(val_rs,val_rt);
+			}
+
     	}
     	else{//é J-type
 
@@ -196,7 +258,6 @@ void process_instruction()
 		if (func == 0x21)//ADDU
 		{
 			NEXT_STATE.REGS[rd] = val_rsu + val_rtu;
-			printf("%x %x\n",val_rsu, val_rtu );
 		}
 
 		if (func == 0x00)//SLL
@@ -209,9 +270,24 @@ void process_instruction()
 			NEXT_STATE.REGS[rd] = val_rtu >> shamt;
 		}
 
+		if (func == 0x06)//SRLV
+		{
+			NEXT_STATE.REGS[rd] = val_rtu >> val_rs;
+		}
+
 		if (func == 0x03)//SRA
 		{
 			NEXT_STATE.REGS[rd] = val_rt >> shamt;
+		}
+
+		if (func == 0x07)//SRAV
+		{
+			NEXT_STATE.REGS[rd] = val_rt >> val_rs;
+		}
+
+		if (func == 0x04)//SLLV
+		{
+			NEXT_STATE.REGS[rd] = val_rt << val_rs;
 		}
 
     }
