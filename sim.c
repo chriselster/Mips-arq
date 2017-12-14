@@ -86,19 +86,17 @@ void process_instruction()
 			if (op == 0x20)//LB
 			{
 				val_rs += im;
-				val_rt = mem_read_32(val_rs);
+				char val8_rt = mem_read_32(val_rs);
 				printf("ants %x\n", val_rt);
-				val_rt = val_rt + 0xffffff00;
 				printf("dispois %x\n", val_rt);
-				NEXT_STATE.REGS[rt] = val_rt;
+				NEXT_STATE.REGS[rt] = val8_rt;
 			}
 
 			if (op == 0x21)//LH
 			{
 				val_rs += im;
-				val_rt = mem_read_32(val_rs);
-				val_rt = val_rt + 0xffff0000;
-				NEXT_STATE.REGS[rt] = val_rt;
+				short val16_rt = mem_read_32(val_rs);
+				NEXT_STATE.REGS[rt] = val16_rt;
 			}
 
 			if (op == 0x24)//LBU
